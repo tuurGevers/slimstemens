@@ -10,7 +10,6 @@
 
         for (let i = 0; i < localStorage.length; i++) {
             const username = localStorage.key(i)
-            console.log(username.slice(0,2))
 
             if(username.slice(0,2) === "*p"){
 

@@ -3,7 +3,14 @@
     import {score} from '../stores.js';
     import Dialog from "./Dialog.svelte";
 
-    const themes = [
+    const fetchThemes = (async () => {
+        const response = await fetch('http://127.0.0.1:8080/')
+        return response.json()
+
+    })()
+    let themes = []
+
+    /*const themes = [
         {
             theme: "andrew tate",
             keywords: [[0, "topG"], [0, "hustlers university"], [0, "human trafficking"], [0, "the matrix"]]
@@ -28,7 +35,20 @@
             theme: "snoop dogg",
             keywords: [[5, "420"], [5, "gin n juice"], [5, "straigh outta compton"], [5, "mac & devon go to highschool"]]
         },
-    ]
+    ]*/
+
+    function indexThemes() {
+        themes.forEach(
+            (theme, i) => {
+                let indexedThemes = []
+                theme.keywords.forEach((kw) => {
+                        indexedThemes.push([i, kw])
+                    }
+                )
+                theme.keywords = indexedThemes
+            }
+        )
+    }
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -41,10 +61,12 @@
 
     $: keywords = []
     const fetchKeywords = async () => {
+        themes = await fetchThemes
+        indexThemes()
         let selectedThemes = []
         let selected = []
         while (selected.length < 3) {
-            let rndm = Math.floor(Math.random() * 5);
+            let rndm = Math.floor(Math.random() * 4);
             if (!selected.includes(rndm)) {
                 selectedThemes.push(themes[rndm])
                 selected.push(rndm)
@@ -55,7 +77,6 @@
                 theme.keywords.forEach(
                     (kw) => {
                         keywords.push(kw)
-
                     }
                 )
             }
@@ -85,6 +106,18 @@
                 elements.forEach(
                     (element) => {
                         document.getElementById(element[0]).style.backgroundColor = "green";
+                        switch (id) {
+                            case 0:
+                                visible0 = false
+                                break;
+                            case 1:
+                                visible1 = false
+                                break;
+                            default:
+                                visible2 = false
+                                break;
+
+                        }
                     }
                 )
                 count++;
@@ -93,7 +126,6 @@
                     (element) => {
                         document.getElementById(element[0]).style.backgroundColor = "#416bb8";
                     }
-
                 )
                 score.update(n => n + 1)
 
@@ -107,6 +139,13 @@
             }
         }
     }
+
+    import {fade} from 'svelte/transition';
+
+    let visible0 = true;
+    let visible1 = true;
+    let visible2 = true;
+
 </script>
 
 <style>
@@ -129,17 +168,33 @@
         background-color: chocolate;
     }
 
-    .selected{
+    .selected {
         background-color: crimson !important;
     }
 </style>
+
 
 {#await fetchKeywords()}
     <h1>loadng</h1>
 {:then k}
     <div class="grid">
         {#each k as kw, i}
-            <button on:click={()=>select(kw[0], i) } id={i} class="cell">{kw[1]}</button>
+            {#if kw[0] === 0}
+                {#if visible0}
+                    <button transition:fade on:click={()=>select(kw[0], i) } id={i} class="cell">{kw[1]}0</button>
+                {/if}
+
+            {:else if kw[0] === 1}
+                {#if visible1}
+                    <button transition:fade on:click={()=>select(kw[0], i) } id={i} class="cell">{kw[1]}1</button>
+                {/if}
+
+            {:else}
+                {#if visible2}
+                    <button transition:fade on:click={()=>select(kw[0], i) } id={i} class="cell">{kw[1]}2</button>
+                {/if}
+
+            {/if}
         {/each}
     </div>
 
